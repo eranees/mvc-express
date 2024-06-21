@@ -61,31 +61,51 @@ employeeController.save = function (req, res, next) {
 }
 employeeController.employeeDetail = function (req, res) {
     var employee_id = req.body.employee_id;
-    var response={};
+    var response = {};
     employeeModel.getEmployeeById(employee_id, function (result) {
         if (result == null) {
-            response.status=0;
-            response.data={};
-            response.message="No employee details found";
+            response.status = 0;
+            response.data = {};
+            response.message = "No employee details found";
         } else {
-            response.status=1;
-            response.data=result;
-            response.message="Employee found";
+            response.status = 1;
+            response.data = result;
+            response.message = "Employee found";
         }
         res.send(JSON.stringify(response));
     })
 }
-employeeController.edit=function(req,res){
-    var employee_id=req.params.employee_id;
-   employeeModel.getEmployeeById(employee_id,function(result){
-    if(result==null){
-        req.flash('error','Sorry the employee doesnot exists!!');
-        res.redirect('/employee');
-    }else{
-        conpanyModel.getAllCompany(function(err,companies){
-            res.render('employee/edit',{title: 'Edit Employee',companies:companies,employee:result[0]});
-        });
-    }
-   });
+employeeController.edit = function (req, res) {
+    var employee_id = req.params.employee_id;
+    employeeModel.getEmployeeById(employee_id, function (result) {
+        if (result == null) {
+            req.flash('error', 'Sorry the employee doesnot exists!!');
+            res.redirect('/employee');
+        } else {
+            conpanyModel.getAllCompany(function (err, companies) {
+                res.render('employee/edit', { title: 'Edit Employee', companies: companies, employee: result[0] });
+            });
+        }
+    });
 }
+
+employeeController.delete = function (req, res) {
+    var employee_id = req.params.employee_id;
+
+    // Call the model function to delete employee
+    employeeModel.deleteEmployeeById(employee_id, function (err, result) {
+        if (err) {
+            console.error("Error deleting employee:", err);
+            res.status(500).json({ error: 'Failed to delete employee. Please try again later.' });
+        } else {
+            if (result && result.message === 'Employee deleted successfully') {
+                res.status(200).json({ message: 'Employee deleted successfully' });
+            } else {
+                res.status(404).json({ error: 'Employee not found.' });
+            }
+        }
+    });
+};
+
+
 module.exports = employeeController;
